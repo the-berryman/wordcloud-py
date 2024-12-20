@@ -1,4 +1,6 @@
 # app.py
+import os
+
 from flask import Flask, render_template, request, jsonify
 from collections import Counter, defaultdict
 import re
@@ -260,7 +262,22 @@ def contribute():
     except Exception as e:
         logger.error(f"Unexpected error: {str(e)}")
         return jsonify({'error': str(e)}), 500
-
+@app.route('/health')
+def health():
+    try:
+        # Check Redis connection
+        redis_client.ping()
+        return jsonify({
+            'status': 'healthy',
+            'instance': os.getenv('INSTANCE_NAME', 'unknown')
+        })
+    except Exception as e:
+        logger.error(f"Health check failed: {str(e)}")
+        return jsonify({
+            'status': 'unhealthy',
+            'error': str(e),
+            'instance': os.getenv('INSTANCE_NAME', 'unknown')
+        }), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
