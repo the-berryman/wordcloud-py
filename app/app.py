@@ -248,7 +248,7 @@ def contribute():
 
             # Get participant list
             participants_data = {
-                name.decode('utf-8'): timestamp.decode('utf-8')
+                name: timestamp
                 for name, timestamp in redis_client.hgetall('participants').items()
             }
 
