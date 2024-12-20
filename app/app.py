@@ -226,7 +226,7 @@ def contribute():
             # Get overall word frequencies
             all_words = []
             for key in redis_client.keys('word:*'):
-                word = key.decode('utf-8').split(':')[1]
+                word = key.split(':')[1]  # No .decode() needed
                 count = redis_client.llen(key)
                 all_words.extend([word] * count)
 
