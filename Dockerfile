@@ -12,17 +12,12 @@ RUN useradd -m -r appuser && \
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     build-essential \
-    && rm -rf /var/lib/apt/lists/*
+    fonts-dejavu && \
+    rm -rf /var/lib/apt/lists/*
 
 # Copy requirements first for better caching
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
-
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    build-essential \
-    fonts-dejavu \ \
-    && rm -rf /var/lib/apt/lists/* \
 
 # Copy application code
 COPY app ./app
