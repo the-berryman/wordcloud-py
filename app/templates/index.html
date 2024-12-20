@@ -150,18 +150,20 @@
                 return;
             }
             
-            try {
-                const response = await fetch('/contribute', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ name, text }),
-                });
-                
-                if (!response.ok) {
-                    throw new Error('Server error');
-                }
+           try {
+    const response = await fetch('/contribute', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name, text }),
+    });
+
+    if (!response.ok) {
+        // Get more details about the error
+        const errorText = await response.text();
+        throw new Error(`Server error: ${response.status} - ${errorText}`);
+    }
                 
                 const data = await response.json();
                 
@@ -180,12 +182,11 @@
                 // Clear inputs
                 document.getElementById('text').value = '';
                 errorDiv.textContent = '';
-                
-            } catch (error) {
-                errorDiv.textContent = 'Error submitting contribution';
-                console.error('Error:', error);
-            }
-        }
+                } catch (error) {
+    errorDiv.textContent = `Error submitting contribution: ${error.message}`;
+    console.error('Full error:', error); }}
+
+
     </script>
 </body>
 </html>
