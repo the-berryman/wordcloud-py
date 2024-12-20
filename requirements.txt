@@ -6,3 +6,4 @@ wordcloud==1.9.2
 matplotlib==3.7.2
 nltk==3.8.1
 bleach==6.0.0
+redis==5.0.1

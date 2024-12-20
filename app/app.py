@@ -12,7 +12,11 @@ from nltk.corpus import stopwords
 import nltk
 import json
 from datetime import datetime
+import redis
+import json
+from datetime import datetime
 matplotlib.use('Agg')
+redis_client = redis.Redis(host='redis', port=6379, db=0)
 
 # Download required NLTK data
 nltk.download('wordnet')
@@ -107,10 +111,12 @@ def process_text(text, contributor):
     # Record contributions
     timestamp = datetime.now().isoformat()
     for word in filtered_words:
-        word_contributions[word].append((contributor, timestamp))
+        # Store word contributions as a list in Redis
+        contribution = json.dumps({'contributor': contributor, 'timestamp': timestamp})
+        redis_client.lpush(f'word:{word}', contribution)
 
     # Update participant's last active time
-    participants[contributor] = timestamp
+    redis_client.hset('participants', contributor, timestamp)
 
     return filtered_words
 
@@ -187,17 +193,25 @@ def contribute():
 
     # Get overall word frequencies
     all_words = []
-    for word, contribs in word_contributions.items():
-        all_words.extend([word] * len(contribs))
+    for key in redis_client.keys('word:*'):
+        word = key.decode('utf-8').split(':')[1]
+        count = redis_client.llen(key)
+        all_words.extend([word] * count)
+
     total_freq = Counter(all_words)
 
     # Generate visualizations
     wordcloud = generate_word_cloud(total_freq)
     barchart = generate_bar_chart(total_freq)
 
-    # Get participant list sorted by most recent activity
+    # Get participant list from Redis
+    participants_data = {
+        name.decode('utf-8'): timestamp.decode('utf-8')
+        for name, timestamp in redis_client.hgetall('participants').items()
+    }
+
     active_participants = sorted(
-        [(name, timestamp) for name, timestamp in participants.items()],
+        [(name, timestamp) for name, timestamp in participants_data.items()],
         key=lambda x: x[1],
         reverse=True
     )
