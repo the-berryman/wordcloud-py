@@ -15,6 +15,16 @@ from datetime import datetime
 import redis
 import json
 from datetime import datetime
+from flask_cors import CORS
+import logging
+
+app = Flask(__name__)
+CORS(app)
+
+# Set up logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+
 matplotlib.use('Agg')
 redis_client = redis.Redis(host='redis', port=6379, db=0)
 
@@ -181,47 +191,61 @@ def index():
 
 @app.route('/contribute', methods=['POST'])
 def contribute():
-    data = request.json
-    name = data.get('name', '').strip()
-    text = data.get('text', '').strip()
+    try:
+        data = request.json
+        if not data:
+            logger.error("No JSON data received")
+            return jsonify({'error': 'No data received'}), 400
 
-    if not name or not text:
-        return jsonify({'error': 'Name and text are required'}), 400
+        name = data.get('name', '').strip()
+        text = data.get('text', '').strip()
 
-    words = process_text(text, name)
-    word_freq = Counter(words)
+        if not name or not text:
+            logger.error(f"Missing required fields: name={bool(name)}, text={bool(text)}")
+            return jsonify({'error': 'Name and text are required'}), 400
 
-    # Get overall word frequencies
-    all_words = []
-    for key in redis_client.keys('word:*'):
-        word = key.decode('utf-8').split(':')[1]
-        count = redis_client.llen(key)
-        all_words.extend([word] * count)
+        words = process_text(text, name)
 
-    total_freq = Counter(all_words)
+        try:
+            # Get overall word frequencies
+            all_words = []
+            for key in redis_client.keys('word:*'):
+                word = key.decode('utf-8').split(':')[1]
+                count = redis_client.llen(key)
+                all_words.extend([word] * count)
 
-    # Generate visualizations
-    wordcloud = generate_word_cloud(total_freq)
-    barchart = generate_bar_chart(total_freq)
+            total_freq = Counter(all_words)
 
-    # Get participant list from Redis
-    participants_data = {
-        name.decode('utf-8'): timestamp.decode('utf-8')
-        for name, timestamp in redis_client.hgetall('participants').items()
-    }
+            # Generate visualizations
+            wordcloud = generate_word_cloud(total_freq)
+            barchart = generate_bar_chart(total_freq)
 
-    active_participants = sorted(
-        [(name, timestamp) for name, timestamp in participants_data.items()],
-        key=lambda x: x[1],
-        reverse=True
-    )
+            # Get participant list
+            participants_data = {
+                name.decode('utf-8'): timestamp.decode('utf-8')
+                for name, timestamp in redis_client.hgetall('participants').items()
+            }
 
-    return jsonify({
-        'wordcloud': wordcloud,
-        'barchart': barchart,
-        'frequencies': dict(total_freq.most_common(20)),
-        'participants': [p[0] for p in active_participants]
-    })
+            active_participants = sorted(
+                [(name, timestamp) for name, timestamp in participants_data.items()],
+                key=lambda x: x[1],
+                reverse=True
+            )
+
+            return jsonify({
+                'wordcloud': wordcloud,
+                'barchart': barchart,
+                'frequencies': dict(total_freq.most_common(20)),
+                'participants': [p[0] for p in active_participants]
+            })
+
+        except redis.RedisError as e:
+            logger.error(f"Redis error: {str(e)}")
+            return jsonify({'error': 'Database error occurred'}), 500
+
+    except Exception as e:
+        logger.error(f"Unexpected error: {str(e)}")
+        return jsonify({'error': str(e)}), 500
 
 
 if __name__ == '__main__':
