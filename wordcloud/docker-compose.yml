@@ -1,0 +1,13 @@
+# docker-compose.yml
+version: '3.8'
+services:
+  wordcloud:
+    build: .
+    ports:
+      - "5000:5000"  # Expose to local network
+    restart: unless-stopped
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cpus: 1.0
+    mem_limit: 512M

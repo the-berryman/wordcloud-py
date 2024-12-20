@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Collaborative Word Cloud</title>
+    <style>
+        :root {
+            --primary: {{ colors.primary }};
+            --secondary: {{ colors.secondary }};
+            --background: {{ colors.background }};
+            --text: {{ colors.text }};
+            --accent1: {{ colors.accent1 }};
+            --accent2: {{ colors.accent2 }};
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--background);
+            color: var(--text);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 1rem 0;
+            margin-bottom: 2rem;
+        }
+        
+        h1, h2 {
+            color: var(--primary);
+        }
+        
+        .input-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        
+        input, textarea {
+            width: 100%;
+            padding: 0.5rem;
+            margin: 0.5rem 0;
+            border: 1px solid var(--secondary);
+            border-radius: 4px;
+        }
+        
+        button {
+            background-color: var(--accent1);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: var(--accent2);
+        }
+        
+        .visualization {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .visualization img {
+            max-width: 100%;
+            height: auto;
+        }
+        
+        .participants {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .participant-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        
+        .participant-badge {
+            background-color: var(--secondary);
+            color: var(--primary);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+        
+        #error-message {
+            color: #C0392B;
+            margin-top: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Collaborative Word Cloud</h1>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div class="input-section">
+            <h2>Contribute Words</h2>
+            <input type="text" id="name" placeholder="Your Name" required>
+            <textarea id="text" placeholder="Enter your text..." rows="4" required></textarea>
+            <button onclick="submitContribution()">Contribute</button>
+            <div id="error-message"></div>
+        </div>
+        
+        <div class="visualization">
+            <h2>Word Cloud</h2>
+            <img id="wordcloud" alt="Word Cloud">
+        </div>
+        
+        <div class="visualization">
+            <h2>Top Words</h2>
+            <img id="barchart" alt="Bar Chart">
+        </div>
+        
+        <div class="participants">
+            <h2>Participants</h2>
+            <div id="participant-list" class="participant-list"></div>
+        </div>
+    </div>
+    
+    <script>
+        async function submitContribution() {
+            const name = document.getElementById('name').value.trim();
+            const text = document.getElementById('text').value.trim();
+            const errorDiv = document.getElementById('error-message');
+            
+            if (!name || !text) {
+                errorDiv.textContent = 'Please provide both name and text';
+                return;
+            }
+            
+            try {
+                const response = await fetch('/contribute', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ name, text }),
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Server error');
+                }
+                
+                const data = await response.json();
+                
+                // Update visualizations
+                document.getElementById('wordcloud').src = 
+                    `data:image/png;base64,${data.wordcloud}`;
+                document.getElementById('barchart').src = 
+                    `data:image/png;base64,${data.barchart}`;
+                
+                // Update participants
+                const participantList = document.getElementById('participant-list');
+                participantList.innerHTML = data.participants
+                    .map(p => `<div class="participant-badge">${p}</div>`)
+                    .join('');
+                
+                // Clear inputs
+                document.getElementById('text').value = '';
+                errorDiv.textContent = '';
+                
+            } catch (error) {
+                errorDiv.textContent = 'Error submitting contribution';
+                console.error('Error:', error);
+            }
+        }
+    </script>
+</body>
+</html>

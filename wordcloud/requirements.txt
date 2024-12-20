@@ -1,0 +1,8 @@
+# requirements.txt
+Flask==2.3.3
+Werkzeug==2.3.7
+gunicorn==21.2.0
+wordcloud==1.9.2
+matplotlib==3.7.2
+nltk==3.8.1
+bleach==6.0.0
