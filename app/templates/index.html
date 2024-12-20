@@ -181,9 +181,15 @@
         errorDiv.textContent = '';
 
     } catch (error) {
+    const errorDiv = document.getElementById('error-message');
+    try {
+        const errorResponse = await response.json();
+        errorDiv.textContent = errorResponse.message || errorResponse.error || 'Error submitting contribution';
+    } catch (e) {
         errorDiv.textContent = 'Error submitting contribution';
-        console.error('Error:', error);
     }
+    console.error('Error:', error);
+}
 }
 
 

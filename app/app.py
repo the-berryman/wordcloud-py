@@ -232,6 +232,16 @@ def contribute():
 
             total_freq = Counter(all_words)
 
+            # Check if we have any words before generating visualizations
+            if not total_freq:
+                return jsonify({
+                    'wordcloud': None,
+                    'barchart': None,
+                    'frequencies': {},
+                    'participants': [],
+                    'message': 'No valid words found after filtering'
+                })
+
             # Generate visualizations
             wordcloud = generate_word_cloud(total_freq)
             barchart = generate_bar_chart(total_freq)
