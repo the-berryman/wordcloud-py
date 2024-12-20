@@ -29,6 +29,13 @@ services:
         limits:
           cpus: '0.5'
           memory: 512M
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:5000/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
 
   wordcloud2:
     build: .
@@ -45,6 +52,13 @@ services:
         limits:
           cpus: '0.5'
           memory: 512M
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:5000/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
 
   wordcloud3:
     build: .
@@ -61,6 +75,13 @@ services:
         limits:
           cpus: '0.5'
           memory: 512M
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:5000/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
 
   redis:
     image: redis:alpine
@@ -68,6 +89,11 @@ services:
       - wordcloud_net
     volumes:
       - redis_data:/data
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
 networks:
   wordcloud_net:
