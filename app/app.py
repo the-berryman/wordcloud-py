@@ -17,6 +17,9 @@ import json
 from datetime import datetime
 from flask_cors import CORS
 import logging
+from redis import Redis
+from redis.exceptions import RedisError
+import time
 
 app = Flask(__name__)
 CORS(app)
@@ -26,7 +29,6 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 matplotlib.use('Agg')
-redis_client = redis.Redis(host='redis', port=6379, db=0)
 
 # Download required NLTK data
 nltk.download('wordnet')
@@ -34,8 +36,20 @@ nltk.download('averaged_perceptron_tagger')
 nltk.download('punkt')
 nltk.download('stopwords')
 
-app = Flask(__name__)
+def get_redis_client():
+    retries = 5
+    while retries:
+        try:
+            client = Redis(host='redis', port=6379, db=0, decode_responses=True)
+            client.ping()  # Test connection
+            return client
+        except RedisError as e:
+            retries -= 1
+            if not retries:
+                raise
+            time.sleep(1)  # Wait before retry
 
+redis_client = get_redis_client()
 
 # In-memory storage (replace with database in production)
 word_contributions = defaultdict(list)  # {word: [(contributor, timestamp), ...]}
