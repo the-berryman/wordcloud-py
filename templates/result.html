@@ -1,0 +1,46 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Word Cloud Results</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .visualization { margin: 20px 0; }
+        table { border-collapse: collapse; width: 100%; max-width: 600px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+    <h1>Results</h1>
+
+    <div class="visualization">
+        <h2>Word Cloud</h2>
+        <img src="data:image/png;base64,{{ wordcloud }}" alt="Word Cloud">
+    </div>
+
+    <div class="visualization">
+        <h2>Top 20 Words</h2>
+        <img src="data:image/png;base64,{{ barchart }}" alt="Bar Chart">
+    </div>
+
+    <div class="visualization">
+        <h2>Word Frequencies</h2>
+        <table>
+            <tr>
+                <th>Word</th>
+                <th>Frequency</th>
+            </tr>
+            {% for word, freq in word_freq.items() %}
+            <tr>
+                <td>{{ word }}</td>
+                <td>{{ freq }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+
+    <br>
+    <a href="/">Generate Another</a>
+</body>
+</html>
