@@ -93,7 +93,7 @@ STOP_WORDS = set(stopwords.words('english')).union({
     'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday',
     'jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec',
     'january', 'february', 'march', 'april', 'may', 'june', 'july', 'august',
-    'september', 'october', 'november', 'december',
+    'september', 'october', 'november', 'december','one','ive'
 
     # Common verbs
     'get', 'got', 'getting',
@@ -106,7 +106,7 @@ STOP_WORDS = set(stopwords.words('english')).union({
 
     # Common prepositions and articles
     'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of',
-    'with', 'by', 'from', 'up', 'down', 'over', 'under', 'again','sla','ha','wa','would'
+    'with', 'by', 'from', 'up', 'down', 'over', 'under', 'again','sla','ha','wa','would','like','note'
 })
 
 
